@@ -1,0 +1,31 @@
+# Development Dockerfile for TalentIQ Backend
+FROM node:18-alpine
+
+# Set working directory
+WORKDIR /app
+
+# Install dumb-init for proper signal handling
+RUN apk add --no-cache dumb-init
+
+# Copy package files
+COPY package*.json ./
+
+# Install all dependencies (including devDependencies)
+RUN npm ci
+
+# Copy source code
+COPY . .
+
+# Expose development server port
+EXPOSE 3000
+
+# Create non-root user
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S backend -u 1001
+
+# Change ownership of the app directory
+RUN chown -R backend:nodejs /app
+USER backend
+
+# Start development server with hot reload
+CMD ["dumb-init", "npm", "run", "dev"]
